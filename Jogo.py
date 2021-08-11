@@ -28,8 +28,14 @@ meteor_x = random.randint(0, WIDTH-METEOR_WIDTH)
 meteor_y = random.randint(-100, -METEOR_HEIGHT)
 meteor_speedx = random.randint(-3, 3)
 meteor_speedy = random.randint(2, 9)
+
+clock = pygame.time.Clock()
+FPS = 30 # 30 frames por segundo
+
 # ===== Loop principal =====
 while game:
+    clock.tick(FPS)
+
     # ----- Trata eventos
     for event in pygame.event.get():
         # ----- Verifica consequências
