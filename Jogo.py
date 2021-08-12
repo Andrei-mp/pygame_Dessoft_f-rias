@@ -2,8 +2,10 @@
 # ----- Importa e inicia pacotes
 import pygame
 import random 
+import time
 
 pygame.init()
+pygame.mixer.init()
 
 # ----- Gera tela principal
 
@@ -26,11 +28,18 @@ ship_img = pygame.image.load('assets/img/playerShip1_orange.png').convert_alpha(
 ship_img = pygame.transform.scale(ship_img, (SHIP_WIDTH, SHIP_HEIGHT))
 bullet_img = pygame.image.load('assets/img/laserRed16.png').convert_alpha()
 
+# Carrega os sons do jogo
+pygame.mixer.music.load('assets/snd/tgfcoder-FrozenJam-SeamlessLoop.ogg')
+pygame.mixer.music.set_volume(0.4)
+boom_sound = pygame.mixer.Sound('assets/snd/expl3.wav')
+destroy_sound = pygame.mixer.Sound('assets/snd/expl6.wav')
+pew_sound = pygame.mixer.Sound('assets/snd/pew.wav')
+
 # ----- Inicia estruturas de dados
 # Definindo os novos tipos
 
 class Ship(pygame.sprite.Sprite):
-    def __init__(self, img, all_sprites, all_bullets, bullet_img):
+    def __init__(self, img, all_sprites, all_bullets, bullet_img, pew_sound):
         # Construtor da classe mãe (Sprite).
         pygame.sprite.Sprite.__init__(self)
 
@@ -43,6 +52,7 @@ class Ship(pygame.sprite.Sprite):
         self.all_sprites = all_sprites
         self.all_bullets = all_bullets
         self.bullet_img = bullet_img
+        self.pew_sound = pew_sound
 
     
     def update(self):
@@ -65,6 +75,8 @@ class Ship(pygame.sprite.Sprite):
         new_bullet = Bullet(self.bullet_img, self.rect.top, self.rect.centerx)
         self.all_sprites.add(new_bullet)
         self.all_bullets.add(new_bullet)
+        self.pew_sound.play()
+
 
 
 class Meteor(pygame.sprite.Sprite):
@@ -124,7 +136,7 @@ all_sprites = pygame.sprite.Group()
 all_meteors = pygame.sprite.Group()
 all_bullets = pygame.sprite.Group()
 # Criando o jogador
-player = Ship(ship_img, all_sprites, all_bullets, bullet_img)
+player = Ship(ship_img, all_sprites, all_bullets, bullet_img, pew_sound)
 all_sprites.add(player)
 # Criando os meteoros
 for i in range(8):
@@ -133,6 +145,7 @@ for i in range(8):
     all_meteors.add(meteor)
 
 # ===== Loop principal =====
+pygame.mixer.music.play(loops=-1)
 while game:
     clock.tick(FPS)
 
@@ -171,11 +184,20 @@ while game:
     all_sprites.update()
 
     # Verifica se houve colisão entre os tiros e meteoros
-    pygame.sprite.pygame.sprite.groupcollide(all_bullets, all_meteors, True, True) 
+    hits = pygame.sprite.pygame.sprite.groupcollide(all_bullets, all_meteors, True, True) 
+    for meteor in hits:
+        m = Meteor(meteor_img)
+        all_sprites.add(m)
+        all_meteors.add(m)
 
     # Verifica se houve colisão entre nave e meteoro
     hits = pygame.sprite.spritecollide(player, all_meteors, True)
     if len(hits) > 0:
+        # Toca o som da colisão
+        boom_sound.play()
+        time.sleep(1) # Precisa esperar senão fecha
+        
+        
         game = False
 
     # ----- Gera saídas
