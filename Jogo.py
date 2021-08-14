@@ -225,8 +225,9 @@ PLAYING = 1
 EXPLODING = 2
 state = PLAYING
 
-score = 0
 keys_down = {}
+score = 0
+lives = 3
 
 # ===== Loop principal =====
 pygame.mixer.music.play(loops=-1)
@@ -289,12 +290,17 @@ while state != DONE:
             # Ganhou pontos!
             score += 100
 
+            if score % 1000 == 0:
+                lives += 1
+ 
+
         # Verifica se houve colisão entre nave e meteoro
         hits = pygame.sprite.spritecollide(player, all_meteors, True)
         if len(hits) > 0:
             # Toca o som da colisão
             assets['boom_sound'].play()
             player.kill()
+            lives -= 1
             explosao = Explosion(player.rect.center, assets)
             all_sprites.add(explosao)
             state = EXPLODING
@@ -305,9 +311,12 @@ while state != DONE:
     elif state == EXPLODING:
         now = pygame.time.get_ticks()
         if now - explosion_tick > explosion_duration:
-            state = PLAYING
-            player = Ship(groups, assets)
-            all_sprites.add(player)
+            if lives == 0:
+                state = DONE
+            else:
+                state = PLAYING
+                player = Ship(groups, assets)
+                all_sprites.add(player)
 
 
     # ----- Gera saídas
@@ -321,6 +330,13 @@ while state != DONE:
     text_rect = text_surface.get_rect()
     text_rect.midtop = (WIDTH / 2,  10)
     window.blit(text_surface, text_rect)
+
+    # Desenhando as vidas
+    text_surface = assets['score_font'].render(chr(9829) * lives, True, (255, 0, 0))
+    text_rect = text_surface.get_rect()
+    text_rect.bottomleft = (10, HEIGHT - 10)
+    window.blit(text_surface, text_rect)
+
 
     pygame.display.update()  # Mostra o novo frame para o jogador
 
