@@ -54,6 +54,7 @@ class Ship(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = assets['ship_img']
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
@@ -107,6 +108,7 @@ class Meteor(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = assets['meteor_img']
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, WIDTH-METEOR_WIDTH)
         self.rect.y = random.randint(-100, -METEOR_HEIGHT)
@@ -133,6 +135,7 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = assets['bullet_img']
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
 
         # Coloca no lugar inicial definido em x, y do constutor
@@ -275,7 +278,7 @@ while state != DONE:
 
     if state == PLAYING:
         # Verifica se houve colisão entre tiro e meteoro
-        hits = pygame.sprite.groupcollide(all_meteors, all_bullets, True, True)
+        hits = pygame.sprite.groupcollide(all_meteors, all_bullets, True, True, pygame.sprite.collide_mask)
         for meteor in hits: # As chaves são os elementos do primeiro grupo (meteoros) que colidiram com alguma bala
             # O meteoro e destruido e precisa ser recriado
             assets['destroy_sound'].play()
@@ -295,7 +298,7 @@ while state != DONE:
  
 
         # Verifica se houve colisão entre nave e meteoro
-        hits = pygame.sprite.spritecollide(player, all_meteors, True)
+        hits = pygame.sprite.spritecollide(player, all_meteors, True, pygame.sprite.collide_mask)
         if len(hits) > 0:
             # Toca o som da colisão
             assets['boom_sound'].play()
