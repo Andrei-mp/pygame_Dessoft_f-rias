@@ -3,12 +3,12 @@
 import pygame
 import random 
 import time
-
 pygame.init()
 pygame.mixer.init()
 
 # ----- Gera tela principal
 
+WIDTH = 500 # Largura
 WIDTH = 490 # Largura
 HEIGHT = 400 # Altura
 
@@ -23,7 +23,6 @@ METEOR_WIDTH = 50
 METEOR_HEIGHT = 38
 SHIP_WIDTH = 50
 SHIP_HEIGHT = 38
-
 def load_assets():
     assets = {}
     assets['background'] = pygame.image.load('assets/img/starfield.png').convert()
@@ -46,7 +45,6 @@ def load_assets():
         explosion_anim.append(img)
     assets["explosion_anim"] = explosion_anim
     assets["score_font"] = pygame.font.Font('assets/font/PressStart2P.ttf', 28)
-
     # Carrega os sons do jogo
     pygame.mixer.music.load('assets/snd/tgfcoder-FrozenJam-SeamlessLoop.ogg')
     pygame.mixer.music.set_volume(0.4)
@@ -54,15 +52,12 @@ def load_assets():
     assets['destroy_sound'] = pygame.mixer.Sound('assets/snd/expl6.wav')
     assets['pew_sound'] = pygame.mixer.Sound('assets/snd/pew.wav')
     return assets
-
 # ----- Inicia estruturas de dados
 # Definindo os novos tipos
-
 class Ship(pygame.sprite.Sprite):
     def __init__(self, groups, assets):
         # Construtor da classe mãe (Sprite).
         pygame.sprite.Sprite.__init__(self)
-
         self.image = assets['ship_img']
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
@@ -72,17 +67,12 @@ class Ship(pygame.sprite.Sprite):
         self.speedy = 0
         self.groups = groups
         self.assets = assets
-
-
         self.last_shot = pygame.time.get_ticks()
-
-
     
     def update(self):
         # Atualizando posição da nave
         self.rect.x += self.speedx
         self.rect.y += self.speedy
-
         # Mantem dentro da tela
         if self.rect.right > WIDTH:
             self.rect.right = WIDTH
@@ -98,25 +88,18 @@ class Ship(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
         # Verifica quantos ticks se passaram desde a ultima mudança de frame.
         elapsed_ticks = now - self.last_shot
-
         # Se já pode atirar
         if elapsed_ticks > 500:
             self.last_shot = now
-
-
             # A nova bala vai ser criada logo acima e no centro horizontal da nave
             new_bullet = Bullet(self.assets, self.rect.top, self.rect.centerx)
             self.groups['all_sprites'].add(new_bullet)
             self.groups['all_bullets'].add(new_bullet)
             self.assets['pew_sound'].play()
-
-
-
 class Meteor(pygame.sprite.Sprite):
     def __init__(self, assets):
         # Construtor da classe mãe (Sprite).
         pygame.sprite.Sprite.__init__(self)
-
         self.image = assets['meteor_img']
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
@@ -124,7 +107,6 @@ class Meteor(pygame.sprite.Sprite):
         self.rect.y = random.randint(-100, -METEOR_HEIGHT)
         self.speedx = random.randint(-3, 3)
         self.speedy = random.randint(2, 9)
-
     def update(self):
         # Atualizando a posição do meteoro
         self.rect.x += self.speedx
@@ -169,63 +151,49 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, assets, bottom, centerx):
         # Construtor da classe mãe (Sprite).
         pygame.sprite.Sprite.__init__(self)
-
         self.image = assets['bullet_img']
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
-
         # Coloca no lugar inicial definido em x, y do constutor
         self.rect.centerx = centerx
         self.rect.bottom = bottom
         self.speedy = -10  # Velocidade fixa para cima
-
     def update(self):
         # A bala só se move no eixo y
         self.rect.y += self.speedy
-
         # Se o tiro passar do inicio da tela, morre.
         if self.rect.bottom < 0:
             self.kill()
-
-
 # Classe que representa uma explosão de meteoro
 class Explosion(pygame.sprite.Sprite):
     # Construtor da classe.
     def __init__(self, center, assets):
         # Construtor da classe mãe (Sprite).
         pygame.sprite.Sprite.__init__(self)
-
         # Armazena a animação de explosão
         self.explosion_anim = assets['explosion_anim']
-
         # Inicia o processo de animação colocando a primeira imagem na tela.
         self.frame = 0  # Armazena o índice atual na animação
         self.image = self.explosion_anim[self.frame]  # Pega a primeira imagem
         self.rect = self.image.get_rect()
         self.rect.center = center  # Posiciona o centro da imagem
-
         # Guarda o tick da primeira imagem, ou seja, o momento em que a imagem foi mostrada
         self.last_update = pygame.time.get_ticks()
-
         # Controle de ticks de animação: troca de imagem a cada self.frame_ticks milissegundos.
         # Quando pygame.time.get_ticks() - self.last_update > self.frame_ticks a
         # próxima imagem da animação será mostrada
         self.frame_ticks = 50
-
     def update(self):
         # Verifica o tick atual.
         now = pygame.time.get_ticks()
         # Verifica quantos ticks se passaram desde a ultima mudança de frame.
         elapsed_ticks = now - self.last_update
-
         # Se já está na hora de mudar de imagem...
         if elapsed_ticks > self.frame_ticks:
             # Marca o tick da nova imagem.
             self.last_update = now
-
             # Avança um quadro.
             self.frame += 1
-
             # Verifica se já chegou no final da animação.
             if self.frame == len(self.explosion_anim):
                 # Se sim, tchau explosão!
@@ -239,9 +207,7 @@ class Explosion(pygame.sprite.Sprite):
 def game_screen(window):
     # Variável para o ajuste de velocidade
     clock = pygame.time.Clock()
-
     assets = load_assets()
-
     # Criando um grupo de meteoros
     all_sprites = pygame.sprite.Group()
     all_meteors = pygame.sprite.Group()
@@ -251,38 +217,41 @@ def game_screen(window):
     groups['all_meteors'] = all_meteors
     groups['all_bullets'] = all_bullets
 
-    
+
     DONE = 0
     PLAYING = 1
     EXPLODING = 2
     ESTADO3 = 3
     state = PLAYING
     pra_baixo = 0
-    meteoros = 1
+    meteoros = 3
     n = 1
 
     # Criando o jogador
     player = Ship(groups, assets)
     all_sprites.add(player)
     # Criando os meteoros
-    for i in range(meteoros):
-        meteor = Meteor(assets)
-        all_sprites.add(meteor)
-        all_meteors.add(meteor)
-        state = PLAYING
+    for i in range(1):
+        for i in range(meteoros):
+            meteor = Meteor(assets)
+            all_sprites.add(meteor)
+            all_meteors.add(meteor)
+            state = PLAYING
 
-    
-        
+    DONE = 0
+    PLAYING = 1
+    EXPLODING = 2
+    state = PLAYING
+
+
 
     keys_down = {}
     score = 0
     lives = 3
-
     # ===== Loop principal =====
     pygame.mixer.music.play(loops=-1)
     while state != DONE:
         clock.tick(FPS)
-
         # ----- Trata eventos
         for event in pygame.event.get():
             # ----- Verifica consequências
@@ -322,7 +291,6 @@ def game_screen(window):
         # Atualizando a posição dos meteoros
         all_sprites.update()
         # a cada update o fundo se move para baixo
-        pra_baixo += 1
         if state == ESTADO3:
             for i in range(1):
                 meteor = Meteor(assets)
@@ -339,13 +307,12 @@ def game_screen(window):
                 m = Meteor(assets)
                 all_sprites.add(m)
                 all_meteors.add(m)
-
                 # No lugar do meteoro antigo, adicionar uma explosão.
                 explosao = Explosion(meteor.rect.center, assets)
                 all_sprites.add(explosao)
 
                 # Ganhou pontos!
-                score += 1000
+                score += 100
                 if score % 1000 == 0:
                     lives += 1
                     state = ESTADO3
@@ -376,9 +343,11 @@ def game_screen(window):
                     all_sprites.add(player)
 
         # ----- Gera saídas
+        window.fill((0, 0, 0))  # Preenche com a cor branca
+        window.blit(assets['background'], (0, 0))
         window.fill((0, 0, 0))  # Preenche com a cor preta 
-               
-        
+
+
         if n == 1:
             window.blit(assets['background'], (0, 0))
             n +=1
@@ -393,8 +362,6 @@ def game_screen(window):
             n = 1
 
 
-        
-        
         # Desenhando meteoros
         all_sprites.draw(window)
 
@@ -403,16 +370,12 @@ def game_screen(window):
         text_rect = text_surface.get_rect()
         text_rect.midtop = (WIDTH / 2,  10)
         window.blit(text_surface, text_rect)
-
         # Desenhando as vidas
         text_surface = assets['score_font'].render(chr(9829) * lives, True, (255, 0, 0))
         text_rect = text_surface.get_rect()
         text_rect.bottomleft = (10, HEIGHT - 10)
         window.blit(text_surface, text_rect)
-
         pygame.display.update()  # Mostra o novo frame para o jogador
-
 game_screen(window)
-
 # ===== Finalização =====
 pygame.quit()  # Função do PyGame que finaliza os recursos utilizados
